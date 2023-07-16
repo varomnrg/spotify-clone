@@ -1,113 +1,60 @@
 const router = require("express").Router();
-const Playlist = require("../models/Playlist");
-const Song = require("../models/Song");
+const PlaylistService = require("../services/playlists");
+const SongService = require("../services/songs");
 
-router.get("/", (req, res, next) => {
-    Playlist.find({})
-        .then((playlists) => {
-            playlists = playlists.map((playlist) => {
-                return {
-                    _id: playlist._id,
-                    title: playlist.title,
-                    description: playlist.description,
-                    owner: playlist.owner,
-                    createdAt: playlist.createdAt,
-                };
-            });
-
-            res.json({
-                status: "success",
-                message: "Playlists list retrieved successfully",
-                data: playlists,
-            });
-        })
-        .catch((error) => {
-            next(error);
+router.get("/", async (req, res, next) => {
+    try {
+        const playlists = await PlaylistService.getPlaylists();
+        res.json({
+            status: "success",
+            message: "Playlists list retrieved successfully",
+            data: playlists,
         });
+    } catch (error) {
+        next(error);
+    }
 });
 
-router.get("/:id", (req, res, next) => {
-    Playlist.findById(req.params.id)
-        .then((playlist) => {
-            if (!playlist) {
-                throw new Error("NotFoundPlaylist");
-            }
-
-            res.json({
-                status: "success",
-                message: "Playlist retrieved successfully",
-                data: {
-                    _id: playlist._id,
-                    title: playlist.title,
-                    description: playlist.description,
-                    owner: playlist.owner,
-                    createdAt: playlist.createdAt,
-                },
-            });
-        })
-        .catch((error) => {
-            next(error);
+router.get("/:id", async (req, res, next) => {
+    try {
+        const playlist = await PlaylistService.getPlaylistById(req.params.id);
+        res.json({
+            status: "success",
+            message: "Playlist retrieved successfully",
+            data: playlist,
         });
+    } catch (error) {
+        next(error);
+    }
 });
 
-router.post("/", (req, res, next) => {
-    const newPlaylist = new Playlist({
-        title: req.body.title,
-        description: req.body.description,
-        owner: req.body.owner,
-    });
+router.post("/", async (req, res, next) => {
+    try {
+        const playlist = req.body;
+        const newPlaylist = await PlaylistService.createPlaylist(playlist);
 
-    newPlaylist
-        .save()
-        .then((playlist) => {
-            res.status(201).json({
-                status: "success",
-                message: "Playlist created successfully",
-                data: {
-                    _id: playlist._id,
-                },
-            });
-        })
-        .catch((error) => {
-            next(error);
+        res.status(201).json({
+            status: "success",
+            message: "Playlist created successfully",
+            data: newPlaylist,
         });
+    } catch (error) {
+        next(error);
+    }
 });
 
-router.get("/:id/songs", (req, res, next) => {
-    Playlist.findById(req.params.id)
-        .then((playlist) => {
-            if (!playlist) {
-                throw new Error("NotFoundPlaylist");
-            }
-
-            Song.find({ playlistId: playlist._id }).then((songs) => {
-                songs = songs.map((song) => {
-                    return {
-                        _id: song._id,
-                        title: song.title,
-                        artist: song.artist,
-                        url: song.url,
-                        createdAt: song.createdAt,
-                    };
-                });
-
-                res.json({
-                    status: "success",
-                    message: "Songs retrieved successfully",
-                    data: {
-                        _id: playlist._id,
-                        title: playlist.title,
-                        description: playlist.description,
-                        owner: playlist.owner,
-                        createdAt: playlist.createdAt,
-                        songs,
-                    },
-                });
-            });
-        })
-        .catch((error) => {
-            next(error);
+router.get("/:id/songs", async (req, res, next) => {
+    try {
+        const playlistId = req.params.id;
+        const songs = await SongService.getSongsByPlaylistId(playlistId);
+        res.json({
+            status: "success",
+            message: "Songs list retrieved successfully",
+            data: songs,
         });
+    } catch (error) {
+        next(error);
+    }
 });
 
 module.exports = router;
