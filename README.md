@@ -1,10 +1,11 @@
 
 # Playtify
 
-A Spotify clone made as Generasi GIGIH 3.0 Full Stack Engineering Server Side Assignment
+This repo is a Spotify clone made as Generasi GIGIH 3.0 Full Stack Engineering Server Side Assignment. It's a backend for a spotify like app that help the user create playlist and add songs to their playlist
 
+## Tech Stack
 
-
+**Server:** Node, Express, MongoDB
 
 ## API Reference
 
